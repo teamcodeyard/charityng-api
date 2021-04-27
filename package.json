@@ -25,7 +25,9 @@
     "moleculer-repl": "^0.6.4"
   },
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "dotenv": "^8.2.0",
+    "hat": "^0.0.3",
     "ioredis": "^4.17.3",
     "moleculer": "^0.14.13",
     "moleculer-db": "^0.8.4",
