@@ -28,7 +28,80 @@ module.exports = {
         path: "/api",
 
         whitelist: [
-          "**"
+          "users.create",
+          "users.me"
+        ],
+
+        // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
+        use: [],
+
+        // Enable/disable parameter merging method. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Disable-merging
+        mergeParams: true,
+
+        // Enable authentication. Implement the logic into `authenticate` method. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Authentication
+        authentication: true,
+
+        // Enable authorization. Implement the logic into `authorize` method. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Authorization
+        authorization: false,
+
+        // The auto-alias feature allows you to declare your route alias directly in your services.
+        // The gateway will dynamically build the full routes from service schema.
+        autoAliases: true,
+
+        aliases: {
+
+        },
+
+        /** 
+         * Before call hook. You can check the request.
+         * @param {Context} ctx 
+         * @param {Object} route 
+         * @param {IncomingRequest} req 
+         * @param {ServerResponse} res 
+         * @param {Object} data
+         * 
+        onBeforeCall(ctx, route, req, res) {
+          // Set request headers to context meta
+          ctx.meta.userAgent = req.headers["user-agent"];
+        }, */
+
+        /**
+         * After call hook. You can modify the data.
+         * @param {Context} ctx 
+         * @param {Object} route 
+         * @param {IncomingRequest} req 
+         * @param {ServerResponse} res 
+         * @param {Object} data
+        onAfterCall(ctx, route, req, res, data) {
+          // Async function which return with Promise
+          return doSomething(ctx, res, data);
+        }, */
+
+        // Calling options. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Calling-options
+        callingOptions: {},
+
+        bodyParsers: {
+          json: {
+            strict: false,
+            limit: "1MB"
+          },
+          urlencoded: {
+            extended: true,
+            limit: "1MB"
+          }
+        },
+
+        // Mapping policy setting. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Mapping-policy
+        mappingPolicy: "all", // Available values: "all", "restrict"
+
+        // Enable/disable logging
+        logging: true
+      },
+      {
+        path: "/admin",
+
+        whitelist: [
+          ""
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
@@ -133,6 +206,7 @@ module.exports = {
       if (apiKey) {
         const user = await ctx.call('admin.users.findByApiKey', { apiKey })
         if (user) {
+          ctx.meta.currentUser = user;
           return user;
         } else {
           // Invalid token

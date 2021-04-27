@@ -2,11 +2,12 @@
 const bcrypt = require('bcrypt');
 const hat = require('hat');
 const DBMixin = require('../mixins/db.mixin');
+const AuthenticationMixin = require('../mixins/authentication.mixin');
 const AdminUser = require('../models/adminUser');
 
 module.exports = {
   name: "admin.users",
-  mixins: [DBMixin("adminUsers")],
+  mixins: [DBMixin("adminUsers"), AuthenticationMixin],
   model: AdminUser,
 
   settings: {
@@ -17,6 +18,7 @@ module.exports = {
       password: { type: "string" },
     }
   },
+  
   actions: {
     count: false,
     remove: false,
@@ -49,30 +51,6 @@ module.exports = {
         return adminUser;
       }
     },
-
-    /**
-     * Find admin user by api key
-     * @actions
-     * @param {String} apiKey - Token of the existing api key
-     * @returns {Object} - Authenticated admin user
-     */
-    findByApiKey: {
-      params: {
-        apiKey: {
-          type: "string"
-        }
-      },
-      async handler(ctx) {
-        const adminUser = await AdminUser.findOne({
-          apiKeys: {
-            $elemMatch: {
-              token: ctx.params.apiKey,
-            }
-          }
-        });
-        return adminUser;
-      }
-    }
 
   },
 
