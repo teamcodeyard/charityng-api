@@ -38,6 +38,9 @@ module.exports = {
       params: {
         user: {
           type: "object"
+        },
+        deviceId: {
+          type: "string"
         }
       },
       async handler(ctx) {
@@ -46,7 +49,7 @@ module.exports = {
         user.password = bcrypt.hashSync(user.password, 10);
         user.apiKeys.push({
           token: hat(256),
-          deviceId: hat() // TODO: use as a client param
+          deviceId: ctx.params.deviceId
         });
         try {
           await user.save();
