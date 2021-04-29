@@ -70,7 +70,8 @@ module.exports = {
             lastName: 'Admin'
           },
           deviceId: 'SYSTEM'
-        })
+        });
+        await this.broker.call('organisations.initializeDefault');
         console.log("✅ DONE!\n\n")
       }
     }
