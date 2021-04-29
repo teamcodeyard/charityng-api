@@ -201,12 +201,11 @@ module.exports = {
       // Read the token from header
       const apiKey = req.headers["api-key"];
       if (req.$action.auth === false) {
-        return;
+        return null;
       }
       if (apiKey) {
         const user = await ctx.call('admin.users.findByApiKey', { apiKey })
         if (user) {
-          ctx.meta.currentUser = user;
           return user;
         } else {
           // Invalid token

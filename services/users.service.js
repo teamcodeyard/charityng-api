@@ -68,7 +68,7 @@ module.exports = {
     me: {
       rest: "GET /me",
       async handler(ctx) {
-        return this.transformDocuments(ctx, {}, ctx.meta.currentUser);
+        return this.transformDocuments(ctx, {}, ctx.meta.user);
       }
     }
 
