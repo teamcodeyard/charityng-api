@@ -57,9 +57,9 @@ module.exports = {
           // TODO: handle mongo errors
           console.error(error);
         }
-        // TODO: implement proper serialization
-        delete user.password;
-        return user;
+        const response = await this.transformDocuments(ctx, {}, user);
+        response.apiKeys = user.apiKeys
+        return response;
       }
     },
 
