@@ -26,10 +26,11 @@ module.exports = {
     routes: [
       {
         path: "/api",
-
+        isAdmin: false,
         whitelist: [
           "users.create",
-          "users.me"
+          "users.me",
+          "users.uploadProfileImage"
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
@@ -99,7 +100,7 @@ module.exports = {
       },
       {
         path: "/admin",
-
+        isAdmin: true,
         whitelist: [
           ""
         ],
@@ -203,15 +204,18 @@ module.exports = {
       if (req.$action.auth === false) {
         return null;
       }
+      let authenticateAction = 'users.findByApiKey';
+      if (route.opts.isAdmin) {
+        authenticateAction = 'admin.users.findByApiKey'
+      }
       if (apiKey) {
-        const user = await ctx.call('admin.users.findByApiKey', { apiKey })
+        const user = await ctx.call(authenticateAction, { apiKey })
         if (user) {
           return user;
         } else {
           // Invalid token
           throw new ApiGateway.Errors.UnAuthorizedError(ApiGateway.Errors.ERR_INVALID_TOKEN);
         }
-
       } else {
         // No token. Throw an error or do nothing if anonymous access is allowed.
         // throw new E.UnAuthorizedError(E.ERR_NO_TOKEN);
