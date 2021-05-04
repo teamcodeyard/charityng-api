@@ -2,16 +2,18 @@
 const bcrypt = require('bcrypt');
 const hat = require('hat');
 const DBMixin = require('../mixins/db.mixin');
+const AWSMixin = require('../mixins/aws.mixin');
 const AuthenticationMixin = require('../mixins/authentication.mixin');
 const User = require('../models/user');
+const { ValidationError } = require('moleculer').Errors;
 
 module.exports = {
   name: "users",
-  mixins: [DBMixin("users"), AuthenticationMixin],
+  mixins: [DBMixin("users"), AuthenticationMixin, AWSMixin],
   model: User,
 
   settings: {
-    fields: ['_id', 'email', 'firstName', 'lastName', 'bio'],
+    fields: ['_id', 'email', 'firstName', 'lastName', 'bio', 'profileImageUrl'],
     entityValidator: {
       email: { type: "email" },
       firstName: { type: "string" },
@@ -72,6 +74,30 @@ module.exports = {
       rest: "GET /me",
       async handler(ctx) {
         return this.transformDocuments(ctx, {}, ctx.meta.user);
+      }
+    },
+
+    /**
+     * Upload image for user profile
+     * @actions
+     * @returns - Updated user profile with new profile image url
+     */
+    uploadProfileImage: {
+      rest: "POST /me/uploadProfileImage",
+      hasFile: true,
+      async handler(ctx) {
+        if (!ctx.meta.files || ctx.meta.files.length == 0) {
+          throw new ValidationError("MISSING FILE", 422, "MISSING FILE");
+        }
+        const path = `/users/${ctx.meta.user._id}/profileImages/${hat()}/`;
+        const file = ctx.meta.files[0];
+        const awsResponse = await this.uploadFile(path + file.name, file);
+        const updatedProfile = await this.adapter.updateById(ctx.meta.user._id, {
+          $set: {
+            profileImageUrl: awsResponse.Location,
+          }
+        });
+        return this.transformDocuments(ctx, {}, updatedProfile);
       }
     }
 

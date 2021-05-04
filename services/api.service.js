@@ -1,6 +1,7 @@
 "use strict";
 
 const ApiGateway = require("moleculer-web");
+const formidable = require('formidable');
 
 /**
  * @typedef {import('moleculer').Context} Context Moleculer's Context
@@ -60,11 +61,12 @@ module.exports = {
          * @param {IncomingRequest} req 
          * @param {ServerResponse} res 
          * @param {Object} data
-         * 
-        onBeforeCall(ctx, route, req, res) {
-          // Set request headers to context meta
-          ctx.meta.userAgent = req.headers["user-agent"];
-        }, */
+         */
+        async onBeforeCall(ctx, route, req, res) {
+          if (req.$action.hasFile === true) {
+            await this.handleFileUpload(ctx, req);
+          }
+        },
 
         /**
          * After call hook. You can modify the data.
@@ -241,6 +243,20 @@ module.exports = {
       if (req.$action.auth == "required" && !user) {
         throw new ApiGateway.Errors.UnAuthorizedError("NO_RIGHTS");
       }
+    },
+
+    async handleFileUpload(ctx, req) {
+      const promisifyUpload = (req) => new Promise((resolve, reject) => {
+        const form = formidable({ multiples: true });
+        form.parse(req, (err, fields, files) => {
+          if (err) return reject(err);
+          if (files != null && files.file) {
+            ctx.meta.files = [files.file];
+          }
+          return resolve(ctx.meta.files);
+        });
+      })
+      await promisifyUpload(req);
     }
 
   }
