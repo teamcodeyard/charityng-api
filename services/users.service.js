@@ -91,7 +91,7 @@ module.exports = {
         }
         const path = `/users/${ctx.meta.user._id}/profileImages/${hat()}/`;
         const file = ctx.meta.files[0];
-        const awsResponse = await this.uploadFile(path + file.name, file);
+        const awsResponse = await this.uploadFile(path + file.name, file.buffer);
         const updatedProfile = await this.adapter.updateById(ctx.meta.user._id, {
           $set: {
             profileImageUrl: awsResponse.Location,

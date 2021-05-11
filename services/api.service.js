@@ -2,6 +2,7 @@
 
 const ApiGateway = require("moleculer-web");
 const formidable = require('formidable');
+const fs = require('fs');
 
 /**
  * @typedef {import('moleculer').Context} Context Moleculer's Context
@@ -255,7 +256,11 @@ module.exports = {
         form.parse(req, (err, fields, files) => {
           if (err) return reject(err);
           if (files != null && files.file) {
-            ctx.meta.files = [files.file];
+            const buffer = fs.readFileSync(files.file.path);
+            ctx.meta.files = [{
+              buffer,
+              name: files.file.name,
+            }];
           }
           return resolve(ctx.meta.files);
         });

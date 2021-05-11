@@ -1,6 +1,6 @@
 "use strict";
 const AWS = require('aws-sdk');
-const fs = require('fs');
+
 module.exports = {
   settings: {
     aws: {
@@ -17,8 +17,7 @@ module.exports = {
   },
 
   methods: {
-    uploadFile(path, file) {
-      const buffer = fs.readFileSync(file.path);
+    uploadFile(path, buffer) {
       return new Promise((resolve, reject) => {
         const params = {
           Bucket: this.settings.aws.bucketName,
