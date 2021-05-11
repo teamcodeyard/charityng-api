@@ -1,11 +1,35 @@
 const mongoose = require("mongoose");
 const { CAMPAIGN } = require("./constants");
 const Schema = mongoose.Schema;
+const ObjectId = mongoose.ObjectId;
+
+const CampaignMessageSchema = Schema({
+  senderUserId: { type: ObjectId, ref: "User", required: true },
+  message: { type: String, required: true }
+}, {
+  timestamps: true
+});
+
+const CampaignFulfillmentSchema = Schema({
+  userId: { type: ObjectId, ref: "User", required: true },
+  quantity: {
+    type: Number,
+    required: true,
+    validate: {
+      validator: Number.isInteger,
+      message: '{VALUE} is not an integer value'
+    }
+  },
+  messages: { type: [CampaignMessageSchema], default: [] },
+}, {
+  timestamps: true
+});
 
 const CampaignResourceSchema = Schema({
   name: { type: String, required: true },
   type: { type: Number, default: CAMPAIGN.RESOURCE.MATERIAL },
-  quantity: { type: Number, default: 1 }
+  quantity: { type: Number, default: 1 },
+  fulfillments: { type: [CampaignFulfillmentSchema], default: [] },
 });
 
 const MediaSchema = Schema({
@@ -18,7 +42,6 @@ const CampaignSchema = Schema({
   status: { type: Number, default: CAMPAIGN.STATUS.DRAFT },
   mediaList: { type: [MediaSchema], default: [] },
   resources: { type: [CampaignResourceSchema], default: () => ({}) },
-  // TODO: add fulfillments
 }, {
   timestamps: true
 });

@@ -50,6 +50,45 @@ module.exports = {
         return this.transformDocuments(ctx, {}, campaign);
       }
     },
+    
+    /**
+    * TODO: write comments
+    */
+    createFulfillment: {
+      rest: "POST /:campaignId/resources/:resourceId/fulfillments",
+      params: {
+        campaignId: {
+          type: "string"
+        },
+        resourceId: {
+          type: "string",
+        },
+        quantity: {
+          type: "number",
+          min: 1,
+        },
+        message: {
+          type: "string",
+          min: 12,
+        }
+      },
+      async handler(ctx) {
+        const campaign = await this.adapter.findById({ _id: ctx.params.campaignId });
+        const resource = campaign.resources.find(x => x._id.toString() === ctx.params.resourceId);
+        resource.fulfillments.push({
+          userId: ctx.meta.user._id,
+          messages: [
+            {
+              senderUserId: ctx.meta.user._id,
+              message: ctx.params.message,
+            }
+          ],
+          quantity: ctx.params.quantity,
+        });
+        await campaign.save();
+        return campaign;
+      }
+    }
 
   },
 
