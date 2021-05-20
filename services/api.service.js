@@ -109,7 +109,7 @@ module.exports = {
         path: "/admin",
         isAdmin: true,
         whitelist: [
-          ""
+          "organisations.update"
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares

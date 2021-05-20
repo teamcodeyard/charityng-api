@@ -32,6 +32,47 @@ module.exports = {
       }
     },
 
+    /**
+     * Update default organisation
+     * @actions
+     * @params {String} name - Name of the organisation
+     * @params {String} introduction - Introduction text 
+     * @params {Object} contact - Contact information
+     * @params {Object} colors - Colors for client UI scheme
+     */
+    update: {
+      rest: "PUT /update",
+      params: {
+        name: { type: "string", optional: true },
+        introduction: { type: "string", optional: true },
+        contact: {
+          type: "object",
+          optional: true,
+          props: {
+            address: { type: "string", optional: true },
+            phone: { type: "string", convert: true, optional: true },
+            email: { type: "email", optional: true }
+          }
+        },
+        colors: {
+          type: "object",
+          optional: true,
+          props: {
+            primary: { type: "string", min: 3, max: 6, optional: true },
+            secondary: { type: "string", min: 3, max: 6, optional: true }
+          }
+        }
+      },
+      async handler(ctx) {
+        const organisation = await this.adapter.findOne({});
+        const { params } = ctx;
+        const updatedOrganisation = await this.adapter.updateById(organisation._id, {
+          $set: params,
+        });
+        return updatedOrganisation;
+      }
+    }
+
   },
 
   methods: {
