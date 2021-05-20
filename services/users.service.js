@@ -60,6 +60,7 @@ module.exports = {
           // TODO: handle mongo errors
           console.error(error);
         }
+        this.clearCache();
         const response = await this.transformDocuments(ctx, {}, user);
         response.apiKeys = user.apiKeys
         return response;
@@ -98,6 +99,7 @@ module.exports = {
             profileImageUrl: awsResponse.Location,
           }
         });
+        this.clearCache();
         return this.transformDocuments(ctx, {}, updatedProfile);
       }
     }
@@ -105,6 +107,11 @@ module.exports = {
   },
 
   methods: {
-
+    clearCache() {
+      if (this.broker.cacher) {
+        this.broker.cacher.clean('users.**');
+        this.broker.broadcast("cache.clean.users");
+      }
+    }
   }
 };

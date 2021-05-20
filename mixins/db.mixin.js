@@ -57,9 +57,11 @@ module.exports = function(collection) {
 	if (process.env.MONGO_URI) {
 		// Mongo adapter
 		const MongooseAdapter = require("moleculer-db-adapter-mongoose");
+    const mongoose = require("mongoose");
 
 		schema.adapter = new MongooseAdapter(process.env.MONGO_URI);
 		schema.collection = collection;
+    mongoose.set("debug", true);
 	} else if (process.env.NODE_ENV === 'test') {
 		// NeDB memory adapter for testing
 		schema.adapter = new DbService.MemoryAdapter();
