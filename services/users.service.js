@@ -28,6 +28,9 @@ module.exports = {
     remove: false,
     insert: false,
     find: false,
+    get: false,
+    list: false,
+    update: false,
 
     /**
      * Registrate user with given params

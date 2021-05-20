@@ -24,6 +24,8 @@ module.exports = {
     remove: false,
     insert: false,
     find: false,
+    get: false,
+    list: false,
 
     /**
      * TODO: write comments

@@ -19,6 +19,7 @@ module.exports = {
     update: false,
     create: false,
     list: false,
+    get: false,
 
     list: {
       cache: {
