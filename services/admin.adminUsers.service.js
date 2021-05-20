@@ -6,7 +6,7 @@ const AuthenticationMixin = require('../mixins/authentication.mixin');
 const AdminUser = require('../models/adminUser');
 
 module.exports = {
-  name: "admin.users",
+  name: "admin.adminUsers",
   mixins: [DBMixin("adminUsers"), AuthenticationMixin],
   model: AdminUser,
 
@@ -62,7 +62,7 @@ module.exports = {
       const count = await this.adapter.count();
       if (count === 0) {
         console.log("\n\n💥 Initialize first admin user from environment variables");
-        await this.broker.call('admin.users.create', {
+        await this.broker.call('admin.adminUsers.create', {
           adminUser: {
             email: process.env.ADMIN_USER_EMAIL,
             password: process.env.ADMIN_USER_PASSWORD,

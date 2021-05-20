@@ -213,7 +213,7 @@ module.exports = {
       }
       let authenticateAction = 'users.findByApiKey';
       if (route.opts.isAdmin) {
-        authenticateAction = 'admin.users.findByApiKey'
+        authenticateAction = 'admin.adminUsers.findByApiKey'
       }
       if (apiKey) {
         const user = await ctx.call(authenticateAction, { apiKey })
