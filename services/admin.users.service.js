@@ -43,14 +43,9 @@ module.exports = {
       async handler(ctx) {
         const { text, pageNumber, pageSize } = ctx.params;
         const users = await this.adapter.find({
-          query: {
-            $or: [
-              { email: { $regex: `.*${text}.*`, $options: '-i' } },
-              { firstName: { $regex: `.*${text}.*`, $options: '-i' } },
-              { lastName: { $regex: `.*${text}.*`, $options: '-i' } },
-              { bio: { $regex: `.*${text}.*`, $options: '-i' } }
-            ],
-          },
+          query: text ? {
+			$text: { $search: text }
+          } : null,
           offset: pageNumber * pageSize,
           limit: pageSize
         });
@@ -63,6 +58,7 @@ module.exports = {
   },
 
   started() {
+
   },
 
   events: {
