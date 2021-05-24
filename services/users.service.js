@@ -52,7 +52,7 @@ module.exports = {
       async handler(ctx) {
         const user = new User(ctx.params.user);
         await this.validateEntity(user);
-        user.email = user.email.replaceAll(/\.(?=.*?@)|(\+[^\@]+)/g, '');
+        user.email = user.email.replace(/\.(?=.*?@)|(\+[^\@]+)/g, '');
         user.password = bcrypt.hashSync(user.password, 10);
         user.apiKeys.push({
           token: hat(256),
