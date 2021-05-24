@@ -22,6 +22,11 @@ module.exports = {
     get: false,
 
     list: {
+      rest: {
+        method: "GET",
+        fullPath: "/admin/users",
+        path: "/"
+      },
       cache: {
         keys: ["text", "pageNumber", "pageSize"]
       },
@@ -44,14 +49,40 @@ module.exports = {
         const { text, pageNumber, pageSize } = ctx.params;
         const users = await this.adapter.find({
           query: text ? {
-			$text: { $search: text }
+            $text: { $search: text }
           } : null,
           offset: pageNumber * pageSize,
           limit: pageSize
         });
         return this.transformDocuments(ctx, {}, users);
       }
-    }
+    },
+
+    /**
+     * Get end user profile
+     * @actions
+     * @params {String} id - Id of the requested user
+     * @return {Object} user - User object
+     */
+    get: {
+      rest: {
+        method: "GET",
+        fullPath: "/admin/users/:userId",
+        path: "/:userId"
+      },
+      cache: {
+        keys: ["id"]
+      },
+      params: {
+        id: {
+          type: "string",
+        },
+      },
+      async handler(ctx) {
+        const user = await this.adapter.findOne(ctx.params.id);
+        return this.transformDocuments(ctx, {/* TODO: populates */ }, user);
+      }
+    },
   },
 
   methods: {

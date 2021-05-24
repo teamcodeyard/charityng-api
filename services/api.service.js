@@ -114,7 +114,8 @@ module.exports = {
           "organisations.update",
 
           // Users
-          "users.list"
+          "admin.users.list",
+          "admin.users.get"
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
