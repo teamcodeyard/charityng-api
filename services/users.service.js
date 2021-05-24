@@ -6,6 +6,7 @@ const AWSMixin = require('../mixins/aws.mixin');
 const AuthenticationMixin = require('../mixins/authentication.mixin');
 const User = require('../models/user');
 const { ValidationError } = require('moleculer').Errors;
+const { ForbiddenError } = require("moleculer-web").Errors;
 
 module.exports = {
   name: "users",
@@ -104,6 +105,57 @@ module.exports = {
         });
         this.clearCache();
         return this.transformDocuments(ctx, {}, updatedProfile);
+      }
+    },
+
+    /**
+    * Update own profile
+    * @actions
+    * @params {Object} user - optional properties of the user object
+    * @returns - Updated user profile
+    */
+    update: {
+      rest: {
+        method: "PUT",
+        path: "/me"
+      },
+      params: {
+        user: {
+          type: "object",
+          props: {
+            email: {
+              type: "email",
+              optional: true,
+            },
+            firstName: {
+              type: "string",
+              optional: true
+            },
+            lastName: {
+              type: "string",
+              optional: true
+            },
+            password: {
+              type: "string",
+              optional: true
+            },
+            bio: {
+              type: "string",
+              optional: true
+            }
+          }
+        }
+      },
+      async handler(ctx) {
+        const { user } = ctx.params;
+        if (user.password) {
+          user.password = bcrypt.hashSync(user.password, 10);
+        }
+        const updatedUser = await this.adapter.updateById(ctx.meta.user.id, {
+          $set: user,
+        });
+        this.clearCache();
+        return this.transformDocuments(ctx, {}, updatedUser);
       }
     }
 

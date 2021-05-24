@@ -34,6 +34,7 @@ module.exports = {
           "users.create",
           "users.me",
           "users.uploadProfileImage",
+          "users.update",
 
           // Campaigns
           "campaigns.createFulfillment"
