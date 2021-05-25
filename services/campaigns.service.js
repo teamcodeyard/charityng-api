@@ -133,10 +133,19 @@ module.exports = {
     * TODO: write comments
     */
     list: {
+      cache: {
+        keys: ["status", "#user._id"]
+      },
+      params: {
+        status: {
+          type: "number",
+          default: CAMPAIGN.STATUS.ACTIVE
+        }
+      },
       async handler(ctx) {
         const campaigns = await this.adapter.find({
           query: {
-            status: CAMPAIGN.STATUS.ACTIVE,
+            status: ctx.params.status,
             "resources.fulfillments.userId": ctx.meta.user._id,
           },
         });
