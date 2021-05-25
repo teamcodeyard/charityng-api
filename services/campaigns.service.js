@@ -144,6 +144,28 @@ module.exports = {
       },
     },
 
+    /**
+    * TODO: write comments
+    */
+    updateStatus: {
+      params: {
+        campaignId: {
+          type: "string"
+        },
+        status: {
+          type: "number",
+          min: CAMPAIGN.STATUS.DRAFT,
+          max: CAMPAIGN.STATUS.FAILED,
+        }
+      },
+      async handler(ctx) {
+        const campaign = await this.adapter.findById({ _id: ctx.params.campaignId });
+        campaign.status = ctx.params.status;
+        campaign.save();
+        return this.transformDocuments(ctx, {}, campaign);
+      },
+    }
+
   },
 
   methods: {

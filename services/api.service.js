@@ -119,7 +119,8 @@ module.exports = {
           "admin.users.get",
 
           // Campaigns
-          "campaigns.sendMessage"
+          "campaigns.sendMessage",
+          "campaigns.updateStatus"
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
