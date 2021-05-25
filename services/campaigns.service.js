@@ -1,6 +1,7 @@
 "use strict";
 const DBMixin = require('../mixins/db.mixin');
 const Campaign = require('../models/campaign');
+const { CAMPAIGN } = require('../models/constants');
 
 module.exports = {
   name: "campaigns",
@@ -126,6 +127,21 @@ module.exports = {
         await campaign.save();
         return this.transformDocuments(ctx, {}, campaign);
       }
+    },
+
+    /**
+    * TODO: write comments
+    */
+    list: {
+      async handler(ctx) {
+        const campaigns = await this.adapter.find({
+          query: {
+            status: CAMPAIGN.STATUS.ACTIVE,
+            "resources.fulfillments.userId": ctx.meta.user._id,
+          },
+        });
+        return this.transformDocuments(ctx, {}, campaigns);
+      },
     },
 
   },
