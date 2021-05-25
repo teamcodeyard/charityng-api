@@ -8,7 +8,7 @@ module.exports = {
   model: Campaign,
 
   settings: {
-    fields: ['_id', 'title', 'description', 'status', 'mediaList', 'resources'], // TODO: add fulfillments
+    fields: ['_id', 'title', 'description', 'status', 'mediaList', 'resources', 'fulfillments'],
     entityValidator: {
       title: { type: "string", min: 10 },
       description: { type: "string", min: 10 },
@@ -53,7 +53,7 @@ module.exports = {
         return this.transformDocuments(ctx, {}, campaign);
       }
     },
-    
+
     /**
     * TODO: write comments
     */
@@ -89,9 +89,44 @@ module.exports = {
           quantity: ctx.params.quantity,
         });
         await campaign.save();
-        return campaign;
+        return this.transformDocuments(ctx, {}, campaign);
       }
-    }
+    },
+
+    /**
+    * TODO: write comments
+    */
+    sendMessage: {
+      rest: "POST /:campaignId/resources/:resourceId/fulfillments/:fulfillmentId",
+      params: {
+        campaignId: {
+          type: "string"
+        },
+        resourceId: {
+          type: "string",
+        },
+        fulfillmentId: {
+          type: "string",
+        },
+        message: {
+          type: "string",
+        },
+      },
+      async handler(ctx) {
+        const campaign = await this.adapter.findById({ _id: ctx.params.campaignId });
+        const resource = campaign.resources.find(x => x._id.toString() === ctx.params.resourceId);
+        const fulfillment = resource.fulfillments.find(x => x._id.toString() === ctx.params.fulfillmentId);
+        const message = { message: ctx.params.message };
+        if (ctx.meta.userIsAdmin) {
+          message.adminUserId = ctx.meta.user._id;
+        } else {
+          message.userId = ctx.meta.user._id;
+        }
+        fulfillment.messages.push(message);
+        await campaign.save();
+        return this.transformDocuments(ctx, {}, campaign);
+      }
+    },
 
   },
 

@@ -37,7 +37,8 @@ module.exports = {
           "users.update",
 
           // Campaigns
-          "campaigns.createFulfillment"
+          "campaigns.createFulfillment",
+          "campaigns.sendMessage"
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
@@ -115,7 +116,10 @@ module.exports = {
 
           // Users
           "admin.users.list",
-          "admin.users.get"
+          "admin.users.get",
+
+          // Campaigns
+          "campaigns.sendMessage"
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
@@ -220,6 +224,7 @@ module.exports = {
       let authenticateAction = 'users.findByApiKey';
       if (route.opts.isAdmin) {
         authenticateAction = 'admin.adminUsers.findByApiKey'
+        ctx.meta.userIsAdmin = true;
       }
       if (apiKey) {
         const user = await ctx.call(authenticateAction, { apiKey })

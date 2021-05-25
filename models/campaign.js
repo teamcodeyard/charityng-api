@@ -4,8 +4,10 @@ const Schema = mongoose.Schema;
 const ObjectId = mongoose.ObjectId;
 
 const CampaignMessageSchema = Schema({
-  senderUserId: { type: ObjectId, ref: "User", required: true },
-  message: { type: String, required: true }
+  userId: { type: ObjectId, ref: "User" },
+  adminUserId: { type: ObjectId, ref: "AdminUser" },
+  message: { type: String, required: true },
+  status: { type: Number, default: CAMPAIGN.FULFILLMENT.MESSAGE.STATUS.UNREAD },
 }, {
   timestamps: true
 });
@@ -20,6 +22,7 @@ const CampaignFulfillmentSchema = Schema({
       message: '{VALUE} is not an integer value'
     }
   },
+  status: { type: Number, default: CAMPAIGN.FULFILLMENT.STATUS.PENDING },
   messages: { type: [CampaignMessageSchema], default: [] },
 }, {
   timestamps: true

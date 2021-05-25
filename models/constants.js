@@ -10,6 +10,19 @@ module.exports = {
     RESOURCE: {
       MATERIAL: 0,
       HUMAN: 1
+    },
+    FULFILLMENT: {
+      STATUS: {
+        PENDING: 0,
+        COMPLETED: 1,
+        FAILED: 2,
+      },
+      MESSAGE: {
+        STATUS: {
+          UNREAD: 0,
+          READ: 1,
+        },
+      }
     }
   }
 }
