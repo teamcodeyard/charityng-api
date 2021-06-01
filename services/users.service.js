@@ -6,7 +6,6 @@ const AWSMixin = require('../mixins/aws.mixin');
 const AuthenticationMixin = require('../mixins/authentication.mixin');
 const User = require('../models/user');
 const { ValidationError } = require('moleculer').Errors;
-const { ForbiddenError } = require("moleculer-web").Errors;
 
 module.exports = {
   name: "users",

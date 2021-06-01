@@ -39,7 +39,7 @@ module.exports = {
 
           // Campaigns
           "campaigns.createFulfillment",
-          "campaigns.sendMessage"
+          "campaigns.sendMessage",
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
@@ -124,7 +124,10 @@ module.exports = {
 
           // Campaigns
           "campaigns.sendMessage",
-          "campaigns.updateStatus"
+          "campaigns.updateStatus",
+
+          // Organisations
+          "organisations.uploadLogo"
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
@@ -154,11 +157,12 @@ module.exports = {
          * @param {IncomingRequest} req 
          * @param {ServerResponse} res 
          * @param {Object} data
-         * 
-        onBeforeCall(ctx, route, req, res) {
-          // Set request headers to context meta
-          ctx.meta.userAgent = req.headers["user-agent"];
-        }, */
+         */
+        async onBeforeCall(ctx, route, req, res) {
+          if (req.$action.hasFile === true) {
+            await this.handleFileUpload(ctx, req);
+          }
+        },
 
         /**
          * After call hook. You can modify the data.
