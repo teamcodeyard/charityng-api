@@ -35,6 +35,7 @@ module.exports = {
           "users.me",
           "users.uploadProfileImage",
           "users.update",
+          "users.login",
 
           // Campaigns
           "campaigns.createFulfillment",
@@ -58,7 +59,7 @@ module.exports = {
         autoAliases: true,
 
         aliases: {
-
+          "POST /users/login": "users.login"
         },
 
         /** 
@@ -143,7 +144,7 @@ module.exports = {
         autoAliases: true,
 
         aliases: {
-
+          "POST /users/login": "admin.adminUsers.login"
         },
 
         /** 
