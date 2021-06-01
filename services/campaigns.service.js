@@ -138,7 +138,7 @@ module.exports = {
       },
       params: {
         status: {
-          type: "number",
+          type: "string",
           default: CAMPAIGN.STATUS.ACTIVE
         }
       },
@@ -149,6 +149,29 @@ module.exports = {
             "resources.fulfillments.userId": ctx.meta.user._id,
           },
         });
+        return this.transformDocuments(ctx, {}, campaigns);
+      },
+    },
+
+    /**
+    * TODO: write comments
+    */
+    filter: {
+      cache: {
+        keys: ["status"]
+      },
+      params: {
+        status: {
+          type: "string",
+          optional: true
+        }
+      },
+      async handler(ctx) {
+        const query = {};
+        if (ctx.params.status) {
+          query.status = ctx.params.status;
+        }
+        const campaigns = await this.adapter.find({ query });
         return this.transformDocuments(ctx, {}, campaigns);
       },
     },

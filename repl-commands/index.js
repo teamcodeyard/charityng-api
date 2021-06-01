@@ -17,7 +17,7 @@ module.exports = [{
   async action(broker, args) {
     const { options } = args;
     const campaigns = await broker.call(
-      "campaigns.list", { status: options.status || 0 }, { meta: { user: { _id: options.user }, $repl: true } }
+      "campaigns.list", { status: String(options.status || 0) }, { meta: { user: { _id: options.user }, $repl: true } }
     );
     console.table(campaigns);
   }

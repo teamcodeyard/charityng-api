@@ -40,6 +40,8 @@ module.exports = {
           // Campaigns
           "campaigns.createFulfillment",
           "campaigns.sendMessage",
+          "campaigns.list",
+          "campaigns.filter",
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
