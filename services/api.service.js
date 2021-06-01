@@ -118,6 +118,9 @@ module.exports = {
           "admin.users.list",
           "admin.users.get",
 
+          // Admin users
+          "admin.adminUsers.login",
+
           // Campaigns
           "campaigns.sendMessage",
           "campaigns.updateStatus"
