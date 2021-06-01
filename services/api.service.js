@@ -127,6 +127,7 @@ module.exports = {
           // Campaigns
           "campaigns.sendMessage",
           "campaigns.updateStatus",
+          "campaigns.updateFulfillmentStatus",
 
           // Organisations
           "organisations.uploadLogo"

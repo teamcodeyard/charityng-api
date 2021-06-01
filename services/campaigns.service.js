@@ -196,11 +196,42 @@ module.exports = {
         campaign.save();
         return this.transformDocuments(ctx, {}, campaign);
       },
+    },
+
+    /**
+   * TODO: write comments
+   */
+    updateFulfillmentStatus: {
+      rest: {
+        method: "POST",
+        fullPath: "/admin/campaigns/:campaignId/resources/:resourceId/fulfillments/:fulfillmentId/updateStatus",
+        path: "/:campaignId/resources/:resourceId/fulfillments/:fulfillmentId/updateStatus"
+      },
+      params: {
+        campaignId: {
+          type: "string"
+        },
+        status: {
+          type: "number",
+          min: CAMPAIGN.FULFILLMENT.STATUS.PENDING,
+          max: CAMPAIGN.FULFILLMENT.STATUS.FAILED,
+        },
+        resourceId: {
+          type: "string",
+        },
+        fulfillmentId: {
+          type: "string",
+        },
+      },
+      async handler(ctx) {
+        const campaign = await this.adapter.findById({ _id: ctx.params.campaignId });
+        const resource = campaign.resources.find(x => x._id.toString() === ctx.params.resourceId);
+        const fulfillment = resource.fulfillments.find(x => x._id.toString() === ctx.params.fulfillmentId);
+        fulfillment.status = ctx.params.status;
+        campaign.save();
+        return this.transformDocuments(ctx, {}, campaign);
+      },
+
     }
-
-  },
-
-  methods: {
-  },
-
+  }
 };
