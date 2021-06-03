@@ -38,10 +38,13 @@ module.exports = {
           "users.login",
 
           // Campaigns
-          "campaigns.createFulfillment",
-          "campaigns.sendMessage",
           "campaigns.list",
           "campaigns.filter",
+          "campaigns.get",
+
+          // Fulfillments
+          "fulfillments.create",
+          "fulfillments.sendMessage",
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
@@ -61,7 +64,8 @@ module.exports = {
         autoAliases: true,
 
         aliases: {
-          "POST /users/login": "users.login"
+          "POST /users/login": "users.login",
+          "POST /campaigns/:campaignId/resources/:resourceId/fulfillments/:fulfillmentId": "fulfillments.sendMessage"
         },
 
         /** 
@@ -125,9 +129,11 @@ module.exports = {
           "admin.adminUsers.login",
 
           // Campaigns
-          "campaigns.sendMessage",
           "campaigns.updateStatus",
-          "campaigns.updateFulfillmentStatus",
+
+          // Fulfillments
+          "fulfillments.updateStatus",
+          "fulfillments.sendMessage",
 
           // Organisations
           "organisations.uploadLogo"
@@ -150,7 +156,8 @@ module.exports = {
         autoAliases: true,
 
         aliases: {
-          "POST /users/login": "admin.adminUsers.login"
+          "POST /users/login": "admin.adminUsers.login",
+          "POST /campaigns/:campaignId/resources/:resourceId/fulfillments/:fulfillmentId": "fulfillments.sendMessage"
         },
 
         /** 

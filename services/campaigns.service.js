@@ -9,7 +9,7 @@ module.exports = {
   model: Campaign,
 
   settings: {
-    fields: ['_id', 'title', 'description', 'status', 'mediaList', 'resources', 'fulfillments'],
+    fields: ['_id', 'title', 'description', 'status', 'mediaList', 'resources'],
     entityValidator: {
       title: { type: "string", min: 10 },
       description: { type: "string", min: 10 },
@@ -20,7 +20,7 @@ module.exports = {
           quantity: "number"
         }
       },
-    }
+    },
   },
 
   actions: {
@@ -231,7 +231,52 @@ module.exports = {
         campaign.save();
         return this.transformDocuments(ctx, {}, campaign);
       },
+    },
 
+    /**
+    * TODO: write comments
+    */
+    get: {
+      cache: {
+        keys: ['id', '#user._id']
+      },
+      params: {
+        id: {
+          type: "string"
+        }
+      },
+      async handler(ctx) {
+        const campaign = await Campaign.find({ _id: ctx.params.id })
+          .populate({
+            path: 'resources.fulfillments',
+            match: { userId: ctx.meta.user._id }
+          });
+        return this.transformDocuments(ctx, {}, campaign);
+      }
+    },
+
+    /**
+    * TODO: write comments
+    */
+    appendFulfillment: {
+      params: {
+        campaignId: {
+          type: "string"
+        },
+        resourceId: {
+          type: "string",
+        },
+        fulfillmentId: {
+          type: "string"
+        }
+      },
+      async handler(ctx) {
+        const campaign = await this.adapter.findById({ _id: ctx.params.campaignId });
+        const resource = campaign.resources.find(x => x._id.toString() === ctx.params.resourceId);
+        resource.fulfillments.push(ctx.params.fulfillmentId);
+        campaign.save();
+        return campaign;
+      }
     }
   }
 };
