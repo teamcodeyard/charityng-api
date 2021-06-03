@@ -130,6 +130,7 @@ module.exports = {
 
           // Campaigns
           "campaigns.updateStatus",
+          "campaigns.uploadImages",
 
           // Fulfillments
           "fulfillments.updateStatus",
@@ -286,6 +287,7 @@ module.exports = {
         form.parse(req, (err, fields, files) => {
           if (err) return reject(err);
           if (files != null && files.file) {
+            // TODO handle multiple files
             const buffer = fs.readFileSync(files.file.path);
             ctx.meta.files = [{
               buffer,
