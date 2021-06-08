@@ -1,13 +1,12 @@
 "use strict";
 const DBMixin = require('../mixins/db.mixin');
 const Organisation = require('../models/organisation');
-const AWSMixin = require('../mixins/aws.mixin');
 const hat = require('hat');
 const { ValidationError } = require('moleculer').Errors;
 
 module.exports = {
   name: "organisations",
-  mixins: [DBMixin("organisations"), AWSMixin],
+  mixins: [DBMixin("organisations")],
   model: Organisation,
 
   settings: {
@@ -90,11 +89,9 @@ module.exports = {
         if (!ctx.meta.files || ctx.meta.files.length == 0) {
           throw new ValidationError("MISSING FILE", 422, "MISSING FILE");
         }
-        const path = `/organisations/logos/${hat()}/`;
         const file = ctx.meta.files[0];
-        const awsResponse = await this.uploadFile(path + file.name, file.buffer);
         const organisation = await this.adapter.findOne({});
-        organisation.logoUrl = awsResponse.Location;
+        organisation.logoUrl = file.url;
         await organisation.save();
         this.clearCache();
         return this.transformDocuments(ctx, {}, organisation);

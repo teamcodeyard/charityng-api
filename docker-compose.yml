@@ -18,6 +18,19 @@ services:
       - "traefik.http.services.api-gw.loadbalancer.server.port=3000"
     networks:
       - internal
+    
+  app:
+    build:
+      context: .
+    image: charityng-api
+    env_file: docker-compose.env
+    environment:
+      SERVICEDIR: services
+      PORT: 3001
+    depends_on:
+      - redis
+    networks:
+      - internal
 
   mongo:
     image: mongo:4

@@ -3,6 +3,8 @@
 const ApiGateway = require("moleculer-web");
 const formidable = require('formidable');
 const fs = require('fs');
+const hat = require('hat');
+const AWSMixin = require('../mixins/aws.mixin');
 
 /**
  * @typedef {import('moleculer').Context} Context Moleculer's Context
@@ -12,7 +14,7 @@ const fs = require('fs');
 
 module.exports = {
   name: "api",
-  mixins: [ApiGateway],
+  mixins: [ApiGateway, AWSMixin],
 
   // More info about settings: https://moleculer.services/docs/0.14/moleculer-web.html
   settings: {
@@ -284,7 +286,7 @@ module.exports = {
     async handleFileUpload(ctx, req) {
       const promisifyUpload = (req) => new Promise((resolve, reject) => {
         const form = formidable({ multiples: true });
-        form.parse(req, (err, fields, formData) => {
+        form.parse(req, async (err, fields, formData) => {
           if (err) return reject(err);
           if (formData != null) {
             let files = [];
@@ -296,9 +298,9 @@ module.exports = {
             ctx.meta.files = [];
             for (const file of files) {
               const buffer = fs.readFileSync(file.path);
+              const awsResponse = await this.uploadFile(`media/${hat(256)}/` + file.name, buffer);
               ctx.meta.files.push({
-                buffer,
-                name: file.name,
+                url: awsResponse.Location
               });
             }
           }

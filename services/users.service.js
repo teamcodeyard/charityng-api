@@ -2,14 +2,13 @@
 const bcrypt = require('bcrypt');
 const hat = require('hat');
 const DBMixin = require('../mixins/db.mixin');
-const AWSMixin = require('../mixins/aws.mixin');
 const AuthenticationMixin = require('../mixins/authentication.mixin');
 const User = require('../models/user');
 const { ValidationError } = require('moleculer').Errors;
 
 module.exports = {
   name: "users",
-  mixins: [DBMixin("users"), AuthenticationMixin, AWSMixin],
+  mixins: [DBMixin("users"), AuthenticationMixin],
   model: User,
 
   settings: {
@@ -94,12 +93,10 @@ module.exports = {
         if (!ctx.meta.files || ctx.meta.files.length == 0) {
           throw new ValidationError("MISSING FILE", 422, "MISSING FILE");
         }
-        const path = `/users/${ctx.meta.user._id}/profileImages/${hat()}/`;
         const file = ctx.meta.files[0];
-        const awsResponse = await this.uploadFile(path + file.name, file.buffer);
         const updatedProfile = await this.adapter.updateById(ctx.meta.user._id, {
           $set: {
-            profileImageUrl: awsResponse.Location,
+            profileImageUrl: file.url,
           }
         });
         this.clearCache();

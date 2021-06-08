@@ -1,6 +1,5 @@
 "use strict";
 const DBMixin = require('../mixins/db.mixin');
-const AWSMixin = require('../mixins/aws.mixin');
 const Campaign = require('../models/campaign');
 const { CAMPAIGN } = require('../models/constants');
 const hat = require('hat');
@@ -8,7 +7,7 @@ const { ValidationError } = require('moleculer').Errors;
 
 module.exports = {
   name: "campaigns",
-  mixins: [DBMixin("campaigns"), AWSMixin],
+  mixins: [DBMixin("campaigns")],
   model: Campaign,
 
   settings: {
@@ -300,13 +299,10 @@ module.exports = {
           throw new ValidationError("MISSING FILE", 422, "MISSING FILE");
         }
         const campaign = await this.adapter.findById({ _id: ctx.params.campaignId });
-        const path = `/campaigns/${ctx.params.campaignId}/media/${hat()}/`;
         for (let i = 0; i < ctx.meta.files.length; i++) {
           const file = ctx.meta.files[i];
-          console.log(file.name);
-          const awsResponse = await this.uploadFile(path + file.name, file.buffer);
           campaign.mediaList.push({
-            url: awsResponse.Location
+            url: file.url
           })
           await campaign.save();
           this.clearCache();
