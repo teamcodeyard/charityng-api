@@ -284,15 +284,23 @@ module.exports = {
     async handleFileUpload(ctx, req) {
       const promisifyUpload = (req) => new Promise((resolve, reject) => {
         const form = formidable({ multiples: true });
-        form.parse(req, (err, fields, files) => {
+        form.parse(req, (err, fields, formData) => {
           if (err) return reject(err);
-          if (files != null && files.file) {
-            // TODO handle multiple files
-            const buffer = fs.readFileSync(files.file.path);
-            ctx.meta.files = [{
-              buffer,
-              name: files.file.name,
-            }];
+          if (formData != null) {
+            let files = [];
+            if (formData.file) {
+              files.push(formData.file);
+            } else if (formData.files) {
+              files = files.concat(formData.files);
+            }
+            ctx.meta.files = [];
+            for (const file of files) {
+              const buffer = fs.readFileSync(file.path);
+              ctx.meta.files.push({
+                buffer,
+                name: file.name,
+              });
+            }
           }
           return resolve(ctx.meta.files);
         });

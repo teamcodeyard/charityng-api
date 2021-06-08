@@ -4,6 +4,7 @@ const AWSMixin = require('../mixins/aws.mixin');
 const Campaign = require('../models/campaign');
 const { CAMPAIGN } = require('../models/constants');
 const hat = require('hat');
+const { ValidationError } = require('moleculer').Errors;
 
 module.exports = {
   name: "campaigns",
