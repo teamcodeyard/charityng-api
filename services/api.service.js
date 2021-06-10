@@ -131,15 +131,18 @@ module.exports = {
           "admin.adminUsers.login",
 
           // Campaigns
+          "campaigns.create",
           "campaigns.updateStatus",
           "campaigns.uploadImages",
+          "campaigns.update",
 
           // Fulfillments
           "fulfillments.updateStatus",
           "fulfillments.sendMessage",
 
           // Organisations
-          "organisations.uploadLogo"
+          "organisations.uploadLogo",
+          "organisations.update"
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares

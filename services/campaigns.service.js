@@ -311,5 +311,34 @@ module.exports = {
       }
     },
 
+    /**
+    * TODO: write comments
+    */
+    update: {
+      params: {
+        id: {
+          type: "string",
+        },
+        title: {
+          type: "string",
+          min: 10,
+        },
+        description: {
+          type: "string",
+          min: 10,
+        },
+      },
+      async handler(ctx) {
+        const { id, title, description } = ctx.params;
+        const updatedCampaign = await this.adapter.updateById(id, {
+          $set: {
+            title,
+            description
+          }
+        });
+        return this.transformDocuments(ctx, {}, updatedCampaign);
+      }
+    }
+
   },
 };
