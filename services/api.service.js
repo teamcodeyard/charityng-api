@@ -135,6 +135,7 @@ module.exports = {
           "campaigns.updateStatus",
           "campaigns.uploadImages",
           "campaigns.update",
+          "campaigns.updateResource",
 
           // Fulfillments
           "fulfillments.updateStatus",

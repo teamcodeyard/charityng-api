@@ -17,9 +17,19 @@ module.exports = {
       description: { type: "string", min: 10 },
       resources: {
         type: "array", props: {
-          name: "string",
-          type: "number",
-          quantity: "number"
+          name: {
+            type: "string",
+            min: 3
+          },
+          type: {
+            type: "number",
+            min: 0,
+            max: 1,
+          },
+          quantity: {
+            type: "number",
+            min: 1,
+          },
         }
       },
     },
@@ -338,7 +348,48 @@ module.exports = {
         });
         return this.transformDocuments(ctx, {}, updatedCampaign);
       }
-    }
+    },
+
+    /**
+    * TODO: write comments
+    * TODO: fix optional properties
+    */
+    updateResource: {
+      rest: "PUT /:campaignId/resources/:resourceId",
+      params: {
+        campaignId: {
+          type: "string"
+        },
+        resourceId: {
+          type: "string",
+        },
+        name: {
+          type: "string",
+          min: 3,
+        },
+        type: {
+          type: "number",
+          min: 0,
+          max: 1,
+        },
+        quantity: {
+          type: "number",
+          min: 1,
+        },
+      },
+      async handler(ctx) {
+        const { campaignId, resourceId, name, type, quantity } = ctx.params;
+        const updatedCampaign = await Campaign.findOneAndUpdate({ _id: campaignId, "resources._id": resourceId }, {
+          $set: {
+            "resources.$.name": name,
+            "resources.$.type": type,
+            "resources.$.quantity": quantity
+          }
+        }, {returnOriginal: false});
+
+        return this.transformDocuments(ctx, {}, updatedCampaign);
+      }
+    },
 
   },
 };
