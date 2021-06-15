@@ -2,8 +2,8 @@
 const DBMixin = require('../mixins/db.mixin');
 const Campaign = require('../models/campaign');
 const { CAMPAIGN } = require('../models/constants');
-const hat = require('hat');
 const { ValidationError } = require('moleculer').Errors;
+const Fulfillment = require('../models/fulfillment');
 
 module.exports = {
   name: "campaigns",
@@ -258,7 +258,7 @@ module.exports = {
         }
       },
       async handler(ctx) {
-        const campaign = await Campaign.find({ _id: ctx.params.id })
+        const campaign = await Campaign.findOne({ _id: ctx.params.id })
           .populate({
             path: 'resources.fulfillments',
             match: { userId: ctx.meta.user._id }
@@ -385,11 +385,31 @@ module.exports = {
             "resources.$.type": type,
             "resources.$.quantity": quantity
           }
-        }, {returnOriginal: false});
+        }, { returnOriginal: false });
 
         return this.transformDocuments(ctx, {}, updatedCampaign);
       }
     },
+
+    /**
+    * TODO: write comments
+    */
+    remove: {
+      rest: "DELETE /:id",
+      params: {
+        id: {
+          type: "string"
+        }
+      },
+      async handler(ctx) {
+        const response = await Campaign.deleteOne({ _id: ctx.params.id });
+        // TODO use mongoose middleware
+        if (response.ok === 1) {
+          await Fulfillment.deleteMany({ campaignId: ctx.params.id });
+        }
+        return response;
+      }
+    }
 
   },
 };
