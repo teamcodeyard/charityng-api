@@ -19,7 +19,7 @@ const CampaignSchema = Schema({
   description: { type: String, required: true },
   status: { type: Number, default: CAMPAIGN.STATUS.DRAFT },
   mediaList: { type: [MediaSchema], default: [] },
-  resources: { type: [CampaignResourceSchema], default: () => ({}) },
+  resources: { type: [CampaignResourceSchema], default: () => ([]) },
 }, {
   timestamps: true
 });
