@@ -38,6 +38,8 @@ module.exports = {
           "users.uploadProfileImage",
           "users.update",
           "users.login",
+          "users.requestForgottenPassword",
+          "users.changeForgottenPassword",
 
           // Campaigns
           "campaigns.list",

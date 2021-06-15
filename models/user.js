@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const { ApiKeySchema } = require('./apiKey');
 
+const ForgottenPasswordTokenSchema = Schema({
+  token: { type: String, unique: true },
+}, {
+  timestamps: true
+});
+
 const UserSchema = Schema({
   email: { type: String, required: true, unique: true },
   firstName: { type: String, required: true },
@@ -9,7 +15,8 @@ const UserSchema = Schema({
   password: { type: String, required: true },
   apiKeys: { type: [ApiKeySchema], default: [] },
   profileImageUrl: { type: String, default: '/default.png' },
-  bio: { type: String }
+  bio: { type: String },
+  forgottenPasswordTokens: { type: [ForgottenPasswordTokenSchema], default: [] }
 }, {
   timestamps: true
 });

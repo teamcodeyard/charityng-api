@@ -5,6 +5,7 @@ const DBMixin = require('../mixins/db.mixin');
 const AuthenticationMixin = require('../mixins/authentication.mixin');
 const User = require('../models/user');
 const { ValidationError } = require('moleculer').Errors;
+const { BadRequestError } = require('moleculer-web').Errors;
 
 module.exports = {
   name: "users",
@@ -19,7 +20,8 @@ module.exports = {
       lastName: { type: "string" },
       password: { type: "string" },
       bio: { type: "string", optional: true }
-    }
+    },
+    forgottenPasswordTokenValidityInMinutes: process.env.FORGOTTEN_PASSWORD_TOKEN_VALIDITY_IN_MINUTES || 15
   },
 
   actions: {
@@ -152,6 +154,65 @@ module.exports = {
         });
         this.clearCache();
         return this.transformDocuments(ctx, {}, updatedUser);
+      }
+    },
+
+    requestForgottenPassword: {
+      auth: false,
+      params: {
+        email: {
+          type: "email"
+        }
+      },
+      async handler(ctx) {
+        const user = await this.adapter.findOne({ email: ctx.params.email });
+        if (user) {
+          const token = hat(512);
+          user.forgottenPasswordTokens.push({
+            token
+          });
+          await user.save();
+          // TODO: i18n
+          await ctx.call('emails.sendEmail', { subject: "Forgotten password", receivers: [user.email], templateName: "forgottenPassword", locale: "en", variables: { token } })
+        }
+        return { response: "ok" }
+      }
+    },
+
+    changeForgottenPassword: {
+      auth: false,
+      params: {
+        token: {
+          type: "string"
+        },
+        password: {
+          type: "string"
+        }
+      },
+      async handler(ctx) {
+        const user = await this.adapter.findOne({ forgottenPasswordTokens: { $elemMatch: { token: ctx.params.token } } })
+        if (!user) {
+          throw new BadRequestError(); // TODO: handle errors
+        }
+        const token = user.forgottenPasswordTokens.find(x => x.token === ctx.params.token);
+        const diffInMs = new Date() - token.createdAt;
+        const diffInMinutes = Math.round(((diffInMs % 86400000) % 3600000) / 60000);
+        if (diffInMinutes > this.settings.forgottenPasswordTokenValidityInMinutes) {
+          await this.adapter.updateById(user._id, { $pull: { forgottenPasswordTokens: { _id: token._id } } });
+          throw new BadRequestError(); // TODO: handle errors
+        }
+        const password = bcrypt.hashSync(ctx.params.password, 10);
+        await this.adapter.updateById(user._id, {
+          $set: {
+            password
+          },
+          $pull: {
+            forgottenPasswordTokens: {
+              _id: token._id
+            }
+          }
+        });
+        return { response: "ok" }
       }
     }
 

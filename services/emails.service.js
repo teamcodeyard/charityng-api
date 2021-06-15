@@ -2,7 +2,6 @@
 const nodemailer = require("nodemailer");
 const vash = require('vash');
 const fs = require('fs');
-const { ValidationError } = require('moleculer').Errors;
 
 module.exports = {
   name: "emails",
@@ -14,7 +13,7 @@ module.exports = {
           type: "string",
         },
         receivers: {
-          type: "string"
+          type: "array"
         },
         templateName: {
           type: "string"
