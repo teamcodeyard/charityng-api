@@ -124,6 +124,7 @@ module.exports = {
       const user = await this.adapter.findOne({ _id: ctx.params.id })
       user.status = status;
       user.save();
+      this.broker.broadcast("cache.clean.users");
       return this.transformDocuments(ctx, {/* TODO: populates */ }, user);
     }
   },
