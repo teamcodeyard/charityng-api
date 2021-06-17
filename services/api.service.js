@@ -139,6 +139,7 @@ module.exports = {
           "campaigns.update",
           "campaigns.updateResource",
           "campaigns.remove",
+          "campaigns.deleteMedia",
 
           // Fulfillments
           "fulfillments.updateStatus",

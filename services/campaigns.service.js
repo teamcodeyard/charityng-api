@@ -4,10 +4,11 @@ const Campaign = require('../models/campaign');
 const { CAMPAIGN } = require('../models/constants');
 const { ValidationError } = require('moleculer').Errors;
 const Fulfillment = require('../models/fulfillment');
+const AWSMixin = require('../mixins/aws.mixin');
 
 module.exports = {
   name: "campaigns",
-  mixins: [DBMixin("campaigns")],
+  mixins: [DBMixin("campaigns"), AWSMixin],
   model: Campaign,
 
   settings: {
@@ -297,7 +298,7 @@ module.exports = {
      * @returns - Updated organisation with new logo url
      */
     uploadImages: {
-      rest: "POST /:campaignId/uploadImages",
+      rest: "POST /:campaignId/media",
       hasFile: true,
       params: {
         campaignId: {
@@ -318,6 +319,34 @@ module.exports = {
           this.clearCache();
         }
         return this.transformDocuments(ctx, {}, campaign);
+      }
+    },
+
+    deleteMedia: {
+      rest: "DELETE /:campaignId/media/:mediaId",
+      params: {
+        campaignId: {
+          type: "string"
+        },
+        mediaId: {
+          type: "string"
+        }
+      },
+      async handler(ctx) {
+        const campaign = await this.adapter.findById({ _id: ctx.params.campaignId });
+        const media = campaign.mediaList.find(x => x._id.toString() === ctx.params.mediaId);
+        if (media) {
+          await this.deleteFile(media.url.split('amazonaws.com/')[1]); // TODO: refactor media uris
+          const updatedCampaign = await this.adapter.updateById(campaign._id, {
+            $pull: {
+              mediaList: {
+                _id: media._id
+              }
+            }
+          });
+          this.clearCache();
+          return updatedCampaign;
+        }
       }
     },
 

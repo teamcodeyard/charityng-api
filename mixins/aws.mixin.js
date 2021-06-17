@@ -33,6 +33,22 @@ module.exports = {
           resolve(data);
         });
       });
+    },
+
+    deleteFile(path) {
+      return new Promise((resolve, reject) => {
+        const params = {
+          Bucket: this.settings.aws.bucketName,
+          Key: path,
+        }
+        this.s3.deleteObject(params, (err, data) => {
+          if (err) {
+            console.error(err);
+            return reject(err);
+          }
+          resolve(data);
+        });
+      })
     }
   }
 };
