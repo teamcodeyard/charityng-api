@@ -24,5 +24,11 @@ module.exports = {
         },
       }
     }
+  },
+  USER: {
+    STATUS: {
+      INACTIVE: 0,
+      ACTIVE: 1
+    }
   }
 }

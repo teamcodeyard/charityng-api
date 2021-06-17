@@ -5,6 +5,7 @@ const formidable = require('formidable');
 const fs = require('fs');
 const hat = require('hat');
 const AWSMixin = require('../mixins/aws.mixin');
+const { USER } = require("../models/constants");
 
 /**
  * @typedef {import('moleculer').Context} Context Moleculer's Context
@@ -128,6 +129,8 @@ module.exports = {
           // Users
           "admin.users.list",
           "admin.users.get",
+          "admin.users.deactivate",
+          "admin.users.activate",
 
           // Admin users
           "admin.adminUsers.login",
@@ -259,6 +262,10 @@ module.exports = {
       if (apiKey) {
         const user = await ctx.call(authenticateAction, { apiKey })
         if (user) {
+          if (user.status === USER.STATUS.INACTIVE) {
+            // Banned 
+            throw new ApiGateway.Errors.ForbiddenError("BANNED"); // TODO: handle errors
+          }
           return user;
         } else {
           // Invalid token

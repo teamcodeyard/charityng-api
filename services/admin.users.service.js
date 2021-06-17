@@ -1,6 +1,7 @@
 "use strict";
 const DBMixin = require('../mixins/db.mixin');
 const User = require('../models/user');
+const { USER } = require("../models/constants");
 
 module.exports = {
   name: "admin.users",
@@ -8,7 +9,7 @@ module.exports = {
   model: User,
 
   settings: {
-    fields: ["_id", "email", "profileImageUrl", "firstName", "lastName", "bio"],
+    fields: ["_id", "email", "profileImageUrl", "firstName", "lastName", "bio", "status"],
   },
 
   actions: {
@@ -67,8 +68,8 @@ module.exports = {
     get: {
       rest: {
         method: "GET",
-        fullPath: "/admin/users/:userId",
-        path: "/:userId"
+        fullPath: "/admin/users/:id",
+        path: "/:id"
       },
       cache: {
         keys: ["id"]
@@ -83,9 +84,48 @@ module.exports = {
         return this.transformDocuments(ctx, {/* TODO: populates */ }, user);
       }
     },
+
+    deactivate: {
+      rest: {
+        method: "POST",
+        fullPath: "/admin/users/:id/deactivate",
+        path: "/:id/ban"
+      },
+      params: {
+        id: {
+          type: "string",
+        },
+      },
+      async handler(ctx) {
+        return await this.changeUserStatus(ctx, USER.STATUS.INACTIVE)
+      }
+    },
+
+    activate: {
+      rest: {
+        method: "POST",
+        fullPath: "/admin/users/:id/activate",
+        path: "/:id/ban"
+      },
+      params: {
+        id: {
+          type: "string",
+        },
+      },
+      async handler(ctx) {
+        return await this.changeUserStatus(ctx, USER.STATUS.ACTIVE)
+      }
+    }
+
   },
 
   methods: {
+    async changeUserStatus(ctx, status) {
+      const user = await this.adapter.findOne({ _id: ctx.params.id })
+      user.status = status;
+      user.save();
+      return this.transformDocuments(ctx, {/* TODO: populates */ }, user);
+    }
   },
 
   started() {
