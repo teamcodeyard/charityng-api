@@ -2,6 +2,7 @@
 const DBMixin = require('../mixins/db.mixin');
 const User = require('../models/user');
 const { USER } = require("../models/constants");
+const { BadRequestError } = require('moleculer-web').Errors;
 
 module.exports = {
   name: "admin.users",
@@ -9,7 +10,21 @@ module.exports = {
   model: User,
 
   settings: {
-    fields: ["_id", "email", "profileImageUrl", "firstName", "lastName", "bio", "status"],
+    fields: ["_id", "email", "profileImageUrl", "firstName", "lastName", "bio", "status", "rewardId"],
+  },
+
+  hooks: {
+    after: {
+      "*": async (ctx, res) => {
+        if (res.rewardId) {
+          try {
+            res.reward = await ctx.call('rewards.get', { id: res.rewardId.toString() });
+          } catch (err) { console.error(err) } // TODO: think about it
+          delete res.rewardId;
+        }
+        return res;
+      },
+    },
   },
 
   actions: {
@@ -105,7 +120,7 @@ module.exports = {
       rest: {
         method: "POST",
         fullPath: "/admin/users/:id/activate",
-        path: "/:id/ban"
+        path: "/:id/activate"
       },
       params: {
         id: {
@@ -114,6 +129,33 @@ module.exports = {
       },
       async handler(ctx) {
         return await this.changeUserStatus(ctx, USER.STATUS.ACTIVE)
+      }
+    },
+
+    assignReward: {
+      rest: {
+        method: "POST",
+        fullPath: "/admin/users/:id/assignReward",
+        path: "/:id/assignReward"
+      },
+      params: {
+        id: {
+          type: "string",
+        },
+        rewardId: {
+          type: "string",
+        },
+      },
+      async handler(ctx) {
+        const reward = await ctx.call('rewards.get', { id: ctx.params.rewardId });
+        const user = await this.adapter.findOne({ _id: ctx.params.id });
+        if (!reward || !user) {
+          throw new BadRequestError(); // TODO: handle errors
+        }
+        user.rewardId = reward._id;
+        await user.save();
+        this.broker.broadcast("cache.clean.users");
+        return this.transformDocuments(ctx, {}, user);
       }
     }
 

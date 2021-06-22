@@ -131,6 +131,7 @@ module.exports = {
           "admin.users.get",
           "admin.users.deactivate",
           "admin.users.activate",
+          "admin.users.assignReward",
 
           // Admin users
           "admin.adminUsers.login",
@@ -150,7 +151,14 @@ module.exports = {
 
           // Organisations
           "organisations.uploadLogo",
-          "organisations.update"
+          "organisations.update",
+
+          // Rewards
+          "rewards.create",
+          "rewards.get",
+          "rewards.list",
+          "rewards.update",
+          "rewards.remove",
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares

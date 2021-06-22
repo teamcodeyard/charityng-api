@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { USER } = require("./constants");
 const Schema = mongoose.Schema;
+const ObjectId = mongoose.ObjectId;
 const { ApiKeySchema } = require('./apiKey');
 
 const ForgottenPasswordTokenSchema = Schema({
@@ -18,7 +19,8 @@ const UserSchema = Schema({
   profileImageUrl: { type: String, default: '/default.png' },
   bio: { type: String },
   forgottenPasswordTokens: { type: [ForgottenPasswordTokenSchema], default: [] },
-  status: { type: Number, default: USER.STATUS.ACTIVE }
+  status: { type: Number, default: USER.STATUS.ACTIVE },
+  rewardId: { type: ObjectId, ref: "Reward" }
 }, {
   timestamps: true
 });
