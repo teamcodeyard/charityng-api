@@ -12,8 +12,8 @@ const CampaignMessageSchema = Schema({
   timestamps: true
 });
 
-const CampaignFulfillmentSchema = Schema({
-  userId: { type: ObjectId, ref: "User", required: true },
+const CampaignFulfillmentResourcesSchema = Schema({
+  resourceId: { type: ObjectId, ref: "Resource" },
   quantity: {
     type: Number,
     required: true,
@@ -22,12 +22,36 @@ const CampaignFulfillmentSchema = Schema({
       message: '{VALUE} is not an integer value'
     }
   },
+});
+
+const CampaignFulfillmentSchema = Schema({
+  userId: { type: ObjectId, ref: "User", required: true },
   status: { type: Number, default: CAMPAIGN.FULFILLMENT.STATUS.PENDING },
   messages: { type: [CampaignMessageSchema], default: [] },
   campaignId: { type: ObjectId, ref: "Campaign" },
-  resourceId: { type: ObjectId },
+  resources: { type: [CampaignFulfillmentResourcesSchema] }
 }, {
   timestamps: true
 });
+
+CampaignFulfillmentSchema.virtual('campaign', {
+  ref: 'Campaign',
+  localField: 'campaignId',
+  foreignField: '_id',
+  justOne: true
+});
+
+CampaignFulfillmentSchema.set('toObject', { virtuals: true });
+CampaignFulfillmentSchema.set('toJSON', { virtuals: true });
+
+CampaignMessageSchema.virtual('user', {
+  ref: 'User',
+  localField: 'userId',
+  foreignField: '_id',
+  justOne: true
+});
+
+CampaignMessageSchema.set('toObject', { virtuals: true });
+CampaignMessageSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model("Fulfillment", CampaignFulfillmentSchema);

@@ -28,6 +28,22 @@ module.exports = {
     // Global Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
     use: [],
 
+    // Global CORS settings for all routes
+    cors: {
+      // Configures the Access-Control-Allow-Origin CORS header.
+      origin: "*",
+      // Configures the Access-Control-Allow-Methods CORS header. 
+      methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE", "PATCH"],
+      // Configures the Access-Control-Allow-Headers CORS header.
+      allowedHeaders: ['Content-Type', 'api-key'],
+      // Configures the Access-Control-Expose-Headers CORS header.
+      exposedHeaders: [],
+      // Configures the Access-Control-Allow-Credentials CORS header.
+      credentials: false,
+      // Configures the Access-Control-Max-Age CORS header.
+      maxAge: 3600
+    },
+
     routes: [
       {
         path: "/api",
@@ -50,11 +66,26 @@ module.exports = {
           // Fulfillments
           "fulfillments.create",
           "fulfillments.sendMessage",
+          "fulfillments.list",
         ],
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
         use: [],
-
+        // Global CORS settings for all routes
+        cors: {
+          // Configures the Access-Control-Allow-Origin CORS header.
+          origin: "*",
+          // Configures the Access-Control-Allow-Methods CORS header. 
+          methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE", "PATCH"],
+          // Configures the Access-Control-Allow-Headers CORS header.
+          allowedHeaders: ['Content-Type', 'api-key'],
+          // Configures the Access-Control-Expose-Headers CORS header.
+          exposedHeaders: [],
+          // Configures the Access-Control-Allow-Credentials CORS header.
+          credentials: false,
+          // Configures the Access-Control-Max-Age CORS header.
+          maxAge: 3600
+        },
         // Enable/disable parameter merging method. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Disable-merging
         mergeParams: true,
 
@@ -70,7 +101,7 @@ module.exports = {
 
         aliases: {
           "POST /users/login": "users.login",
-          "POST /campaigns/:campaignId/resources/:resourceId/fulfillments/:fulfillmentId": "fulfillments.sendMessage"
+          "POST /campaigns/:campaignId/fulfillments/:fulfillmentId": "fulfillments.sendMessage"
         },
 
         /** 
@@ -144,6 +175,9 @@ module.exports = {
           "campaigns.updateResource",
           "campaigns.remove",
           "campaigns.deleteMedia",
+          "campaigns.listAll",
+          "campaigns.getByAdmin",
+          "campaigns.addResource",
 
           // Fulfillments
           "fulfillments.updateStatus",
@@ -152,6 +186,7 @@ module.exports = {
           // Organisations
           "organisations.uploadLogo",
           "organisations.update",
+          "organisations.get",
 
           // Rewards
           "rewards.create",
@@ -163,7 +198,21 @@ module.exports = {
 
         // Route-level Express middlewares. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Middlewares
         use: [],
-
+        // Global CORS settings for all routes
+        cors: {
+          // Configures the Access-Control-Allow-Origin CORS header.
+          origin: "*",
+          // Configures the Access-Control-Allow-Methods CORS header. 
+          methods: ["GET", "OPTIONS", "POST", "PUT", "DELETE", "PATCH"],
+          // Configures the Access-Control-Allow-Headers CORS header.
+          allowedHeaders: ['Content-Type', 'api-key'],
+          // Configures the Access-Control-Expose-Headers CORS header.
+          exposedHeaders: [],
+          // Configures the Access-Control-Allow-Credentials CORS header.
+          credentials: false,
+          // Configures the Access-Control-Max-Age CORS header.
+          maxAge: 3600
+        },
         // Enable/disable parameter merging method. More info: https://moleculer.services/docs/0.14/moleculer-web.html#Disable-merging
         mergeParams: true,
 
@@ -179,7 +228,8 @@ module.exports = {
 
         aliases: {
           "POST /users/login": "admin.adminUsers.login",
-          "POST /campaigns/:campaignId/resources/:resourceId/fulfillments/:fulfillmentId": "fulfillments.sendMessage"
+          "POST /campaigns/:campaignId/resources/:resourceId/fulfillments/:fulfillmentId": "fulfillments.sendMessage",
+          //"POST /:campaignId/resources/:resourceId/fulfillments/:fulfillmentId": "campaigns.sendMessage"
         },
 
         /** 

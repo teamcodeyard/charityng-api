@@ -73,6 +73,7 @@ module.exports = {
         const updatedOrganisation = await this.adapter.updateById(organisation._id, {
           $set: params,
         });
+        this.clearCache();
         return updatedOrganisation;
       }
     },
@@ -82,7 +83,7 @@ module.exports = {
      * @actions
      * @returns - Updated organisation with new logo url
      */
-     uploadLogo: {
+    uploadLogo: {
       rest: "POST /uploadLogo",
       hasFile: true,
       async handler(ctx) {
@@ -94,6 +95,26 @@ module.exports = {
         organisation.logoUrl = file.url;
         await organisation.save();
         this.clearCache();
+        return this.transformDocuments(ctx, {}, organisation);
+      }
+    },
+
+    /**
+     * Get organisation
+     * @actions
+     * @returns - Organisation
+     */
+    get: {
+      rest: {
+        method: "GET",
+        fullPath: "/admin/organisation",
+        path: "/"
+      },
+      cache: true,
+      auth: false,
+      params: false,
+      async handler(ctx) {
+        const organisation = await this.adapter.findOne({});
         return this.transformDocuments(ctx, {}, organisation);
       }
     },

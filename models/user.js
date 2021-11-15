@@ -16,7 +16,7 @@ const UserSchema = Schema({
   lastName: { type: String, required: true },
   password: { type: String, required: true },
   apiKeys: { type: [ApiKeySchema], default: [] },
-  profileImageUrl: { type: String, default: '/default.png' },
+  profileImageUrl: { type: String, default: '/default.svg' },
   bio: { type: String },
   forgottenPasswordTokens: { type: [ForgottenPasswordTokenSchema], default: [] },
   status: { type: Number, default: USER.STATUS.ACTIVE },

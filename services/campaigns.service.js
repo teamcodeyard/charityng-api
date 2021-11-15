@@ -17,6 +17,7 @@ module.exports = {
       title: { type: "string", min: 10 },
       description: { type: "string", min: 10 },
       resources: {
+        optional: true,
         type: "array", props: {
           name: {
             type: "string",
@@ -33,6 +34,8 @@ module.exports = {
           },
         }
       },
+      location: { type: "string" },
+      deadline: { type: "string", convert: true }
     },
   },
 
@@ -68,79 +71,6 @@ module.exports = {
       }
     },
 
-    /**
-    * TODO: write comments
-    */
-    createFulfillment: {
-      rest: "POST /:campaignId/resources/:resourceId/fulfillments",
-      params: {
-        campaignId: {
-          type: "string"
-        },
-        resourceId: {
-          type: "string",
-        },
-        quantity: {
-          type: "number",
-          min: 1,
-        },
-        message: {
-          type: "string",
-          min: 12,
-        }
-      },
-      async handler(ctx) {
-        const campaign = await this.adapter.findById({ _id: ctx.params.campaignId });
-        const resource = campaign.resources.find(x => x._id.toString() === ctx.params.resourceId);
-        resource.fulfillments.push({
-          userId: ctx.meta.user._id,
-          messages: [
-            {
-              senderUserId: ctx.meta.user._id,
-              message: ctx.params.message,
-            }
-          ],
-          quantity: ctx.params.quantity,
-        });
-        await campaign.save();
-        return this.transformDocuments(ctx, {}, campaign);
-      }
-    },
-
-    /**
-    * TODO: write comments
-    */
-    sendMessage: {
-      rest: "POST /:campaignId/resources/:resourceId/fulfillments/:fulfillmentId",
-      params: {
-        campaignId: {
-          type: "string"
-        },
-        resourceId: {
-          type: "string",
-        },
-        fulfillmentId: {
-          type: "string",
-        },
-        message: {
-          type: "string",
-        },
-      },
-      async handler(ctx) {
-        const campaign = await this.adapter.findById({ _id: ctx.params.campaignId });
-        const resource = campaign.resources.find(x => x._id.toString() === ctx.params.resourceId);
-        const fulfillment = resource.fulfillments.find(x => x._id.toString() === ctx.params.fulfillmentId);
-        const message = { message: ctx.params.message };
-        if (ctx.meta.userIsAdmin) {
-          message.adminUserId = ctx.meta.user._id;
-        } else {
-          message.userId = ctx.meta.user._id;
-        }
-        fulfillment.messages.push(message);
-        await campaign.save();
-        return this.transformDocuments(ctx, {}, campaign);
-      }
-    },
 
     /**
     * TODO: write comments
@@ -156,12 +86,10 @@ module.exports = {
         }
       },
       async handler(ctx) {
-        const campaigns = await this.adapter.find({
-          query: {
-            status: ctx.params.status,
-            "resources.fulfillments.userId": ctx.meta.user._id,
-          },
-        });
+        const campaigns = await Campaign.find({
+          status: ctx.params.status,
+          "resources.fulfillments.userId": ctx.meta.user._id,
+        }).populate('resources.fulfillments');
         return this.transformDocuments(ctx, {}, campaigns);
       },
     },
@@ -170,20 +98,40 @@ module.exports = {
     * TODO: write comments
     */
     filter: {
+      auth: false,
       cache: {
         keys: ["status"]
+      },
+      rest: {
+        method: "GET",
+        path: '/filter'
       },
       params: {
         status: {
           type: "string",
-          optional: true
-        }
+          optional: true,
+          default: CAMPAIGN.STATUS.ACTIVE,
+          convert: true,
+        },
+        text: {
+          type: "string",
+          optional: true,
+          default: '',
+          convert: true,
+        },
       },
       async handler(ctx) {
-        const query = {};
-        if (ctx.params.status) {
-          query.status = ctx.params.status;
-        }
+        const { text, status } = ctx.params;
+        const query = {
+          $and: [
+            {
+              $or: [
+                { title: { $regex: `.*${text}.*`, $options: '-i' } },
+                { description: { $regex: `.*${text}.*`, $options: '-i' } }
+              ]
+            },
+            { status }]
+        };
         const campaigns = await this.adapter.find({ query });
         return this.transformDocuments(ctx, {}, campaigns);
       },
@@ -193,6 +141,11 @@ module.exports = {
     * TODO: write comments
     */
     updateStatus: {
+      rest: {
+        method: "POST",
+        fullPath: "/admin/campaigns/:campaignId/updateStatus",
+        path: "/:campaignId/updateStatus"
+      },
       params: {
         campaignId: {
           type: "string"
@@ -207,6 +160,7 @@ module.exports = {
         const campaign = await this.adapter.findById({ _id: ctx.params.campaignId });
         campaign.status = ctx.params.status;
         campaign.save();
+        this.clearCache();
         return this.transformDocuments(ctx, {}, campaign);
       },
     },
@@ -250,8 +204,9 @@ module.exports = {
     * TODO: write comments
     */
     get: {
+      auth: false,
       cache: {
-        keys: ['id', '#user._id']
+        keys: ['id']
       },
       params: {
         id: {
@@ -262,7 +217,6 @@ module.exports = {
         const campaign = await Campaign.findOne({ _id: ctx.params.id })
           .populate({
             path: 'resources.fulfillments',
-            match: { userId: ctx.meta.user._id }
           });
         return this.transformDocuments(ctx, {}, campaign);
       }
@@ -271,22 +225,23 @@ module.exports = {
     /**
     * TODO: write comments
     */
-    appendFulfillment: {
+    updateResourceFulfillments: {
       params: {
-        campaignId: {
-          type: "string"
+        fulfillment: {
+          type: "object"
         },
-        resourceId: {
-          type: "string",
-        },
-        fulfillmentId: {
-          type: "string"
-        }
       },
       async handler(ctx) {
-        const campaign = await this.adapter.findById({ _id: ctx.params.campaignId });
-        const resource = campaign.resources.find(x => x._id.toString() === ctx.params.resourceId);
-        resource.fulfillments.push(ctx.params.fulfillmentId);
+        const campaign = await this.adapter.findById({ _id: ctx.params.fulfillment.campaignId });
+        console.log(ctx.params);
+        ctx.params.fulfillment.resources.forEach(x => {
+            const resource = campaign.resources.find(y => y._id.toString() === x.resourceId.toString());
+            if(resource) {
+              resource.fulfillments.push(ctx.params.fulfillment._id)
+            } else {
+              console.log("No resource dikk%")
+            }
+        });
         campaign.save();
         return campaign;
       }
@@ -438,7 +393,114 @@ module.exports = {
         }
         return response;
       }
-    }
+    },
+
+    /**
+     * List all campaigns for admin users
+     */
+    listAll: {
+      rest: {
+        method: "GET",
+        fullPath: "/admin/campaigns",
+        path: "/"
+      },
+      cache: {
+        keys: ["text", "pageNumber", "pageSize"]
+      },
+      params: {
+        text: {
+          type: "string",
+          optional: true,
+          default: '',
+          convert: true,
+        },
+        pageNumber: {
+          type: "number",
+          convert: true
+        },
+        pageSize: {
+          type: "number",
+          default: 5,
+        }
+      },
+      async handler(ctx) {
+        const { text, pageNumber, pageSize } = ctx.params;
+        const query = {
+          $or: [
+            { title: { $regex: `.*${text}.*`, $options: '-i' } },
+            { description: { $regex: `.*${text}.*`, $options: '-i' } }
+          ]
+        };
+        const users = await this.adapter.find({
+          query,
+          offset: pageNumber * pageSize,
+          limit: pageSize
+        });
+        const list = await this.transformDocuments(ctx, {}, users);
+        const allCount = await this.adapter.count(query);
+        const pageCount = Math.ceil(allCount / pageSize);
+        return {
+          list,
+          pageNumber,
+          pageCount
+        }
+      }
+    },
+
+    /**
+    * TODO: write comments
+    */
+    getByAdmin: {
+      cache: {
+        keys: ['id', '#user._id']
+      },
+      rest: {
+        method: "GET",
+        fullPath: "/admin/campaigns/:id",
+        path: "/"
+      },
+      params: {
+        id: {
+          type: "string"
+        }
+      },
+      async handler(ctx) {
+        const campaign = await Campaign.findOne({ _id: ctx.params.id })
+          .populate('resources.fulfillments')
+        // TODO: populate user
+        return this.transformDocuments(ctx, {}, campaign);
+      }
+    },
+
+    /**
+    * TODO: write comments
+    */
+    addResource: {
+      cache: /*{
+                          keys: ['id', '#user._id']
+            },*/false,
+      rest: {
+        method: "POST",
+        fullPath: "/admin/campaigns/:id/resources",
+        path: "/"
+      },
+      params: {
+        id: {
+          type: "string"
+        },
+        resource: {
+          type: 'object'
+        }
+      },
+      async handler(ctx) {
+        const campaign = await Campaign.findOne({ _id: ctx.params.id })
+        campaign.resources.push(ctx.params.resource);
+        await this.validateEntity(campaign);
+        campaign.save();
+        this.clearCache();
+        return this.transformDocuments(ctx, {}, campaign);
+      }
+    },
 
   },
 };

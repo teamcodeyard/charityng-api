@@ -10,7 +10,7 @@ module.exports = {
   model: Fulfillment,
 
   settings: {
-    fields: ['_id', 'userId', 'quantity', 'status', 'messages', 'campaignId', 'resourceId'],
+    fields: ['_id', 'userId', 'quantity', 'status', 'messages', 'campaignId', 'resourceId', 'campaign', 'resources'],
   },
 
   actions: {
@@ -29,18 +29,14 @@ module.exports = {
     create: {
       rest: {
         method: 'POST',
-        fullPath: '/api/campaigns/:campaignId/resources/:resourceId/fulfillments'
+        fullPath: '/api/campaigns/:campaignId/fulfillments'
       },
       params: {
         campaignId: {
           type: "string"
         },
-        resourceId: {
-          type: "string",
-        },
-        quantity: {
-          type: "number",
-          min: 1,
+        resources: {
+          type: "array"
         },
         message: {
           type: "string",
@@ -49,24 +45,20 @@ module.exports = {
       },
       async handler(ctx) {
         const campaign = await ctx.call('campaigns.get', { id: ctx.params.campaignId });
-        const resource = campaign.resources.find(x => x._id.toString() === ctx.params.resourceId);
         const fulfillment = await this.adapter.insert({
           userId: ctx.meta.user._id,
           messages: [
             {
-              senderUserId: ctx.meta.user._id,
+              userId: ctx.meta.user._id,
               message: ctx.params.message,
             }
           ],
-          quantity: ctx.params.quantity,
           campaignId: campaign._id,
-          resourceId: resource._id
+          resources: ctx.params.resources
         })
-        await ctx.call('campaigns.appendFulfillment', {
-          campaignId: campaign._id.toString(),
-          resourceId: resource._id.toString(),
-          fulfillmentId: fulfillment._id.toString(),
-        });
+        //if(fulfillment.status === CAMPAIGN.FULFILLMENT.STATUS.COMPLETED) {
+        ctx.call('campaigns.updateResourceFulfillments', { fulfillment });
+        //}
         return this.transformDocuments(ctx, {}, fulfillment);
       }
     },
@@ -79,9 +71,6 @@ module.exports = {
         campaignId: {
           type: "string"
         },
-        resourceId: {
-          type: "string",
-        },
         fulfillmentId: {
           type: "string",
         },
@@ -91,8 +80,8 @@ module.exports = {
       },
       async handler(ctx) {
         const { campaignId, resourceId, fulfillmentId } = ctx.params;
-        const fulfillment = await this.adapter.findOne({ campaignId, resourceId, _id: fulfillmentId });
-        if (fulfillment.userId.toString() !== ctx.meta.user._id.toString()) {
+        const fulfillment = await this.adapter.findOne({ campaignId, _id: fulfillmentId });
+        if (fulfillment.userId.toString() !== ctx.meta.user._id.toString() && !ctx.meta.userIsAdmin) {
           throw new UnAuthorizedError(); // TODO: use proper errors
         }
         const message = { message: ctx.params.message };
@@ -141,8 +130,8 @@ module.exports = {
     },
 
     /**
-   * TODO: write comments
-   */
+     * TODO: write comments
+     */
     listOwnByCampaign: {
       cache: {
         keys: ['campaignId', 'resourceId', '#user._id']
@@ -158,6 +147,24 @@ module.exports = {
       async handler(ctx) {
         const { campaignId } = ctx.params;
         const fulfillments = await this.adapter.find({ query: { campaignId, userId: ctx.meta.user._id } });
+        return this.transformDocuments(ctx, {}, fulfillments);
+      },
+    },
+
+    /**
+     * TODO: write comments
+     */
+    list: {
+      cache: {
+        keys: ['#user._id']
+      },
+      params: {
+      },
+      async handler(ctx) {
+        const fulfillments = await Fulfillment.find({ userId: ctx.meta.user._id }).populate(['campaign', {
+          path: 'messages.user',
+          select: ['firstName', 'lastName']
+        }]);
         return this.transformDocuments(ctx, {}, fulfillments);
       },
     },

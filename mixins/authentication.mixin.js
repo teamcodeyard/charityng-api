@@ -42,6 +42,7 @@ module.exports = {
         },
         deviceId: {
           type: "string",
+          optional: true,
         }
       },
       async handler(ctx) {
@@ -50,13 +51,14 @@ module.exports = {
         if (!user) {
           throw new NotFoundError() // TODO: use proper errors
         }
+        console.log("!! AUTH");
         const passwordMatched = await bcrypt.compare(password, user.password);
         if (!passwordMatched) {
           throw new UnAuthorizedError(); // TODO: use proper errors
         }
         const apiKey = {
           token: hat(256),
-          deviceId: ctx.params.deviceId
+          deviceId: ctx.params.deviceId || `device-id-${hat()}`
         };
         user.apiKeys.push(apiKey);
         await user.save();
